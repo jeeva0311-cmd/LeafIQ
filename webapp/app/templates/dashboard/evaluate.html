@@ -1,0 +1,160 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Model Evaluation{% endblock %}
+
+{% block dashboard_content %}
+<p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+  Run the trained models on the held-out test set (821 images, never used during training).
+  Results are cached — repeat visits load instantly.
+  Evaluation takes ~2 min on CPU for the CNN.
+</p>
+
+<!-- ── Run evaluation form ──────────────────────────────────────────── -->
+<div class="card mb-4">
+  <h3 style="margin-bottom:1rem;">Run Evaluation</h3>
+  {% if not has_test_data %}
+  <div class="alert alert-warning">
+    Test data cache not found at <code>outputs/cache/</code>.
+    Run <code>python src/preprocess.py</code> first to generate it.
+  </div>
+  {% else %}
+  <form method="POST" action="{{ url_for('dashboard.evaluate_run') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div style="display:flex;gap:1.25rem;flex-wrap:wrap;align-items:center;margin-bottom:1rem;">
+      <div class="form-check">
+        <input type="checkbox" id="includeXgb" name="include_xgb" value="1">
+        <label for="includeXgb" style="font-size:0.9rem;cursor:pointer;">
+          Also evaluate CNN + XGBoost (~3 min extra)
+        </label>
+      </div>
+      <div class="form-check">
+        <input type="checkbox" id="forceRun" name="force" value="1">
+        <label for="forceRun" style="font-size:0.9rem;cursor:pointer;">
+          Force re-evaluation (ignore cache)
+        </label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary"
+            onclick="this.disabled=true;this.textContent='Running (~2 min)…';this.form.submit();">
+      ▶ Run Evaluation on Test Set
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+{% if cache %}
+{% for model_key, m in cache.items() %}
+{% if 'error' not in m %}
+<div class="card mb-4">
+  <div style="display:flex;justify-content:space-between;align-items:center;
+              flex-wrap:wrap;gap:0.5rem;margin-bottom:1.25rem;">
+    <h3>
+      {{ benchmark[model_key].display if model_key in benchmark else model_key }}
+      {% if model_key == 'custom_cnn' %}<span class="tag ml-2" style="font-size:0.72rem;">Recommended</span>{% endif %}
+    </h3>
+    <span style="font-size:0.78rem;color:var(--text-muted);">
+      Evaluated: {{ m.evaluated_at[:10] }}
+    </span>
+  </div>
+
+  <!-- Key metrics -->
+  <div class="stat-grid mb-4" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">
+    <div class="stat-card"><div class="stat-value">{{ "%.2f"|format(m.accuracy*100) }}%</div><div class="stat-label">Accuracy</div></div>
+    <div class="stat-card"><div class="stat-value">{{ "%.2f"|format(m.f1_macro*100) }}%</div><div class="stat-label">Macro F1</div></div>
+    <div class="stat-card"><div class="stat-value">{{ "%.2f"|format(m.precision_macro*100) }}%</div><div class="stat-label">Macro Precision</div></div>
+    <div class="stat-card"><div class="stat-value">{{ "%.2f"|format(m.recall_macro*100) }}%</div><div class="stat-label">Macro Recall</div></div>
+    <div class="stat-card"><div class="stat-value">{{ m.errors }}</div><div class="stat-label">Errors / {{ m.total }}</div></div>
+    <div class="stat-card"><div class="stat-value">{{ m.inference_ms_per_img }} ms</div><div class="stat-label">ms / image</div></div>
+  </div>
+
+  <!-- Note: these are test-set metrics, not prediction confidence -->
+  <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1.25rem;font-style:italic;">
+    These are test-set aggregate metrics computed on 821 held-out images.
+    They measure overall model performance, not the confidence of any individual prediction.
+  </p>
+
+  <!-- Per-class table -->
+  <h4 style="margin-bottom:0.75rem;">Per-Class Performance</h4>
+  <div class="table-wrap" style="margin-bottom:1.5rem;">
+    <table>
+      <thead>
+        <tr>
+          <th>Class</th><th>Support</th><th>Precision</th>
+          <th>Recall</th><th>F1</th><th>Errors</th><th>Confused With</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pc in m.per_class %}
+        <tr>
+          <td><strong>{{ pc.class_name.replace('Tomato_','') }}</strong></td>
+          <td>{{ pc.support }}</td>
+          <td style="color:var(--accent-lt);">{{ "%.2f"|format(pc.precision*100) }}%</td>
+          <td>{{ "%.2f"|format(pc.recall*100) }}%</td>
+          <td>{{ "%.2f"|format(pc.f1*100) }}%</td>
+          <td>
+            {% if pc.error_count == 0 %}
+              <span style="color:var(--success);">0 ✓</span>
+            {% else %}
+              <span style="color:var(--error);">{{ pc.error_count }}</span>
+            {% endif %}
+          </td>
+          <td style="font-size:0.82rem;color:var(--text-muted);">
+            {% if pc.confused_with %}
+              {{ pc.confused_with.replace('Tomato_','') }} ({{ pc.confused_count }}×)
+            {% else %}—{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Confusion matrix -->
+  <h4 style="margin-bottom:0.75rem;">Confusion Matrix (rows=true, cols=predicted)</h4>
+  <div style="overflow-x:auto;">
+    <table style="min-width:360px;">
+      <thead>
+        <tr>
+          <th style="background:var(--surface-3);">True \ Pred</th>
+          {% for cn in class_names %}
+          <th style="background:var(--surface-3);font-size:0.75rem;">
+            {{ cn.replace('Tomato_','')[:8] }}
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for i, row in enumerate(m.confusion_matrix) %}
+        <tr>
+          <td style="font-weight:600;font-size:0.8rem;">
+            {{ class_names[i].replace('Tomato_','')[:10] }}
+          </td>
+          {% for j, cell in enumerate(row) %}
+          {% set is_diag = (i == j) %}
+          <td style="text-align:center;font-weight:{{ '700' if is_diag else '400' }};
+                     color:{{ 'var(--accent-lt)' if is_diag else ('var(--error)' if cell > 0 and not is_diag else 'var(--text-muted)') }};
+                     background:{{ 'rgba(39,174,96,0.08)' if is_diag else '' }};">
+            {{ cell }}
+          </td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% else %}
+<div class="alert alert-error mb-4">
+  <strong>{{ model_key }}:</strong> {{ m.error }}
+</div>
+{% endif %}
+{% endfor %}
+
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;">
+  <div style="font-size:3rem;margin-bottom:1rem;">🎯</div>
+  <h3 style="margin-bottom:0.75rem;">No evaluation results yet</h3>
+  <p style="margin-bottom:1.5rem;">Click "Run Evaluation" above to evaluate the models on the test set.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,6 @@
+class,train,val,test,total,corrupted,missing_splits
+Tomato_Healthy,1113,238,240,1591,0,0
+Tomato_Early_Blight,700,150,150,1000,0,0
+Tomato_Late_Blight,1336,286,287,1909,0,0
+Tomato_Leaf_Mold,666,142,144,952,0,0
+TOTAL,3815,816,821,5452,0,0

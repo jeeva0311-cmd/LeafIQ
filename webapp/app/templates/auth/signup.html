@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Create Account — LeafIQ{% endblock %}
+{% block body %}
+{% include "partials/nav.html" %}
+{% include "partials/flash.html" %}
+
+<div style="min-height:90vh;display:flex;align-items:center;justify-content:center;padding:2rem;">
+  <div style="width:100%;max-width:460px;">
+
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <div style="font-size:2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:0.5rem;">
+        🌿 Leaf<span style="color:var(--accent-lt)">IQ</span>
+      </div>
+      <h1 style="font-size:1.7rem;margin-bottom:0.4rem;">Create your account</h1>
+      <p style="color:var(--text-muted);">Start detecting plant diseases for free</p>
+    </div>
+
+    <div class="card card-elevated">
+      <form method="POST" action="{{ url_for('auth.signup') }}" novalidate>
+        {{ form.hidden_tag() }}
+
+        <div class="form-group">
+          {{ form.username.label(class="form-label") }}
+          {{ form.username(class="form-control" + (' is-invalid' if form.username.errors else ''),
+                           placeholder="leafiq_user", autocomplete="username") }}
+          {% for e in form.username.errors %}
+            <p class="form-error">{{ e }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.email.label(class="form-label") }}
+          {{ form.email(class="form-control" + (' is-invalid' if form.email.errors else ''),
+                        placeholder="you@example.com", autocomplete="email") }}
+          {% for e in form.email.errors %}
+            <p class="form-error">{{ e }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.password.label(class="form-label") }}
+          <div style="position:relative;">
+            {{ form.password(class="form-control" + (' is-invalid' if form.password.errors else ''),
+                             placeholder="Min 8 characters", autocomplete="new-password",
+                             id="password", style="padding-right:3rem;") }}
+            <button type="button" data-toggle-pw="password"
+                    style="position:absolute;right:0.85rem;top:50%;transform:translateY(-50%);
+                           background:none;border:none;cursor:pointer;font-size:1rem;color:var(--text-muted);">👁</button>
+          </div>
+          <span id="pwStrength" style="font-size:0.78rem;font-weight:600;margin-top:0.3rem;display:block;"></span>
+          {% for e in form.password.errors %}
+            <p class="form-error">{{ e }}</p>
+          {% endfor %}
+        </div>
+
+        <div class="form-group">
+          {{ form.confirm.label(class="form-label") }}
+          {{ form.confirm(class="form-control" + (' is-invalid' if form.confirm.errors else ''),
+                          placeholder="Repeat password", autocomplete="new-password") }}
+          {% for e in form.confirm.errors %}
+            <p class="form-error">{{ e }}</p>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" style="margin-top:0.5rem;">
+          Create Account →
+        </button>
+      </form>
+    </div>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.9rem;color:var(--text-muted);">
+      Already have an account?
+      <a href="{{ url_for('auth.login') }}" style="color:var(--accent-lt);font-weight:600;">Sign in</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

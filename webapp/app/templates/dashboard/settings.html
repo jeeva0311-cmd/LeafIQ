@@ -1,0 +1,74 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Settings{% endblock %}
+
+{% block dashboard_content %}
+<div style="max-width:540px;">
+
+  <!-- Account info -->
+  <div class="card mb-4">
+    <h3 style="margin-bottom:1.25rem;">Account Information</h3>
+    <div class="flex gap-3 items-center mb-4">
+      <div class="avatar" style="width:56px;height:56px;font-size:1.3rem;">
+        {{ current_user.username[0].upper() }}
+      </div>
+      <div>
+        <div style="font-weight:600;font-size:1rem;">{{ current_user.username }}</div>
+        <div style="color:var(--text-muted);font-size:0.88rem;">{{ current_user.email }}</div>
+        <div style="color:var(--text-muted);font-size:0.78rem;margin-top:0.2rem;">
+          Member since {{ current_user.created_at.strftime('%B %Y') }}
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;gap:2rem;margin-top:1rem;">
+      <div>
+        <div style="font-size:1.4rem;font-weight:700;color:var(--accent-lt);">
+          {{ current_user.predictions.count() }}
+        </div>
+        <div style="font-size:0.78rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;">
+          Total Predictions
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Change password -->
+  <div class="card mb-4">
+    <h3 style="margin-bottom:1.25rem;">Change Password</h3>
+    <form method="POST" action="{{ url_for('dashboard.settings') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="change_password">
+      <div class="form-group">
+        <label class="form-label">Current Password</label>
+        <input type="password" name="old_password" class="form-control"
+               placeholder="••••••••" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password</label>
+        <input type="password" name="new_password" class="form-control"
+               placeholder="Min 8 characters" id="password" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm New Password</label>
+        <input type="password" name="confirm_password" class="form-control"
+               placeholder="Repeat new password" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Update Password</button>
+    </form>
+  </div>
+
+  <!-- Model info -->
+  <div class="card">
+    <h3 style="margin-bottom:1rem;">Model Configuration</h3>
+    <div style="font-size:0.9rem;display:flex;flex-direction:column;gap:0.6rem;color:var(--text-secondary);">
+      <div>🤖 <strong>Default:</strong> Custom CNN (98.17% accuracy)</div>
+      <div>⚗ <strong>Hybrid:</strong> CNN + XGBoost (98.29% accuracy)</div>
+      <div>📐 <strong>Input size:</strong> 64×64 pixels</div>
+      <div>🏷 <strong>Classes:</strong> Healthy · Early Blight · Late Blight · Leaf Mold</div>
+      <div>⚡ <strong>Inference:</strong> ~74–76 ms on CPU</div>
+      <div>🔬 <strong>Grad-CAM:</strong> Enabled for all CNN predictions</div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

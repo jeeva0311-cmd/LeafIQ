@@ -1,0 +1,15 @@
+LeafIQ - Phase 5 Model Comparison
+================================================================================
+Model                  Status      Acc%     F1%   Prec%    Rec%   ms/img  Errors  Size KB
+--------------------------------------------------------------------------------
+Custom CNN             OK         98.17   98.07   97.89   98.28     74.4      15     3902
+MobileNetV2-A          OK         61.88   55.39   63.81   55.67    324.5     313    11343
+CNN + XGBoost          OK         98.29   98.21   98.15   98.28     87.3      14      835
+================================================================================
+
+Notes:
+  - Test set: 821 images (held-out, never seen during training)
+  - CNN+XGBoost inference time = CNN feature extraction + XGBoost predict (both on CPU)
+  - MobileNetV2-FT excluded: training failed (val_acc=43.26%)
+  - Model size = primary checkpoint file on disk
+  - All metrics computed on identical test samples

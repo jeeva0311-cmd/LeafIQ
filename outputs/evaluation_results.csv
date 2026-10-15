@@ -1,0 +1,4 @@
+model_key,status,accuracy,precision_macro,recall_macro,f1_macro,inference_ms,n_params,best_val_acc_training,note
+custom_cnn,OK,0.9817,0.9789,0.9828,0.9807,74.41,323172,0.9804,
+mobilenetv2,OK,0.6188,0.6381,0.5567,0.5539,324.51,2422852,0.6605,
+mobilenetv2_ft,TRAINING_FAILED,,,,,,,0.4326,Model did not converge (val_acc=0.4326). Results would be meaningless.

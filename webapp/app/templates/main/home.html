@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block title %}LeafIQ — AI Plant Disease Detection{% endblock %}
+
+{% block body %}
+{% include "partials/nav.html" %}
+{% include "partials/flash.html" %}
+
+<!-- ══ HERO ════════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">🌿 AI-Powered Plant Health</div>
+      <h1>Detect Plant Disease<br><em>Instantly.</em></h1>
+      <p class="hero-sub">
+        Upload a tomato leaf image and get an AI-powered disease diagnosis in under a second.
+        Powered by a Custom CNN with <strong style="color:var(--accent-lt)">98.17% accuracy</strong>
+        — trained and validated on the PlantVillage dataset.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg">
+          Get Started Free →
+        </a>
+        <a href="#how-it-works" class="btn btn-secondary btn-lg">
+          See How It Works
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <span class="hero-stat-value">98.17%</span>
+          <span class="hero-stat-label">Test Accuracy</span>
+        </div>
+        <div>
+          <span class="hero-stat-value">4</span>
+          <span class="hero-stat-label">Disease Classes</span>
+        </div>
+        <div>
+          <span class="hero-stat-value">74ms</span>
+          <span class="hero-stat-label">Inference Time</span>
+        </div>
+        <div>
+          <span class="hero-stat-value">821</span>
+          <span class="hero-stat-label">Test Images Verified</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ═════════════════════════════════════════════ -->
+<section class="section" id="features" style="background:var(--surface-2);">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Capabilities</span>
+      <h2 class="section-title">Everything You Need to Protect Your Crops</h2>
+      <p class="section-sub">From instant diagnosis to explainable AI — built for both farmers and researchers.</p>
+    </div>
+    <div class="grid-3">
+      <div class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>Instant Detection</h3>
+        <p>Upload any tomato leaf photo and receive a diagnosis with class probabilities in under 100 ms on CPU.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>Grad-CAM Explainability</h3>
+        <p>Visualize exactly which regions of the leaf the model focused on — transparent, trustworthy AI decisions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Model Comparison</h3>
+        <p>Compare Custom CNN, MobileNetV2, and CNN+XGBoost side-by-side using verified Phase 4/5 benchmark results.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>Prediction History</h3>
+        <p>Every analysis is saved to your account. Review past diagnoses, filter by class, and track trends over time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚗️</div>
+        <h3>Hybrid Model</h3>
+        <p>Optionally run CNN+XGBoost for a 98.29% accuracy hybrid — the same pipeline validated in Phase 5.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Reports & Analytics</h3>
+        <p>Personal dashboard with per-class breakdown, confidence statistics, and actionable disease guidance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══════════════════════════════════════════ -->
+<section class="section" id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Process</span>
+      <h2 class="section-title">Three Steps to a Diagnosis</h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Upload Your Image</h3>
+        <p>Take a photo of a tomato leaf and upload it. JPG, PNG, and WebP supported up to 16 MB.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>AI Analyses the Leaf</h3>
+        <p>The Custom CNN resizes your image to 64×64, runs inference, and computes probabilities for all four classes.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Get Your Diagnosis</h3>
+        <p>Receive the predicted disease class, confidence score, probability breakdown, Grad-CAM heatmap, and treatment advice.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <h3>Take Action</h3>
+        <p>Follow the guided recommendations — from fungicide application to plant isolation — to protect your crop.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CLASSES ═══════════════════════════════════════════════ -->
+<section class="section section-sm" style="background:var(--surface-2);" id="classes">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Detection Targets</span>
+      <h2 class="section-title">Four Tomato Leaf Conditions</h2>
+      <p class="section-sub">The model is trained and validated on the PlantVillage dataset — 821 held-out test images.</p>
+    </div>
+    <div class="grid-4">
+      <div class="card" style="border-top:3px solid #27ae60;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">✓</div>
+        <h4>Healthy</h4>
+        <p style="font-size:0.85rem;margin-top:0.4rem;">No disease detected. Continue routine care and monitoring.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #e67e22;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">⚠</div>
+        <h4>Early Blight</h4>
+        <p style="font-size:0.85rem;margin-top:0.4rem;"><em>Alternaria solani.</em> Concentric brown ring lesions on older leaves.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #c0392b;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">✕</div>
+        <h4>Late Blight</h4>
+        <p style="font-size:0.85rem;margin-top:0.4rem;"><em>Phytophthora infestans.</em> Water-soaked dark patches. Urgent treatment required.</p>
+      </div>
+      <div class="card" style="border-top:3px solid #8e44ad;">
+        <div style="font-size:2rem;margin-bottom:0.75rem;">◈</div>
+        <h4>Leaf Mold</h4>
+        <p style="font-size:0.85rem;margin-top:0.4rem;"><em>Passalora fulva.</em> Yellow patches above, grey-brown mould below leaf.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ MODEL HIGHLIGHTS ══════════════════════════════════════ -->
+<section class="section" id="models">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Verified Results</span>
+      <h2 class="section-title">Benchmarked on 821 Test Images</h2>
+      <p class="section-sub">All metrics come from actual model predictions on the held-out test set — never fabricated.</p>
+    </div>
+    <div class="model-strip">
+      <div class="model-card recommended">
+        <div class="tag" style="margin-bottom:0.75rem;">Recommended</div>
+        <div class="model-label">Custom CNN</div>
+        <div class="model-accuracy">98.17%</div>
+        <div class="model-label">Test Accuracy</div>
+        <div style="margin-top:1rem;font-size:0.82rem;color:var(--text-muted);">
+          323K params · 64×64 input · 74ms/img
+        </div>
+        <div class="model-badge badge-recommended" style="margin-top:0.75rem;">✓ Production Ready</div>
+      </div>
+      <div class="model-card">
+        <div class="tag" style="background:rgba(52,152,219,0.15);color:#74b9ff;border-color:rgba(52,152,219,0.3);margin-bottom:0.75rem;">Experimental</div>
+        <div class="model-label">CNN + XGBoost</div>
+        <div class="model-accuracy">98.29%</div>
+        <div class="model-label">Test Accuracy</div>
+        <div style="margin-top:1rem;font-size:0.82rem;color:var(--text-muted);">
+          256-dim CNN embed · XGBoost · 76ms/img
+        </div>
+        <div class="model-badge badge-experimental" style="margin-top:0.75rem;">⚗ Hybrid Pipeline</div>
+      </div>
+      <div class="model-card">
+        <div class="tag" style="background:rgba(231,76,60,0.15);color:#ff7675;border-color:rgba(231,76,60,0.3);margin-bottom:0.75rem;">Underfitted</div>
+        <div class="model-label">MobileNetV2-A</div>
+        <div class="model-accuracy">61.88%</div>
+        <div class="model-label">Test Accuracy</div>
+        <div style="margin-top:1rem;font-size:0.82rem;color:var(--text-muted);">
+          2.4M params · frozen base · 324ms/img
+        </div>
+        <div class="model-badge badge-limited" style="margin-top:0.75rem;">⚠ Transfer learning failed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ═══════════════════════════════════════════════════ -->
+<section class="section section-sm" style="background:var(--surface-2);">
+  <div class="container" style="text-align:center;">
+    <h2>Ready to Diagnose Your Leaves?</h2>
+    <p style="margin:1rem auto 2rem;max-width:500px;">
+      Create a free account and start detecting plant diseases with AI in under a minute.
+    </p>
+    <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-lg">
+      Create Free Account →
+    </a>
+  </div>
+</section>
+
+<!-- ══ FOOTER ════════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <div class="nav-logo" style="margin-bottom:0.4rem;">🌿 Leaf<span style="color:var(--accent-lt)">IQ</span></div>
+        <p>AI-powered tomato disease detection · PlantVillage dataset</p>
+      </div>
+      <div>
+        <p style="color:var(--text-muted);">
+          Phase 1–6 Machine Learning Lab Project · Python 3.11 · TensorFlow 2.21
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+{% endblock %}

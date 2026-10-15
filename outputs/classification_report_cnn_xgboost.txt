@@ -1,0 +1,13 @@
+Model: CNN + XGBoost
+Checkpoint: C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\models\xgboost_best.pkl
+
+              precision    recall  f1-score   support
+
+     Healthy     1.0000    0.9958    0.9979       240
+Early Blight     0.9539    0.9667    0.9603       150
+ Late Blight     0.9790    0.9756    0.9773       287
+   Leaf Mold     0.9931    0.9931    0.9931       144
+
+    accuracy                         0.9829       821
+   macro avg     0.9815    0.9828    0.9821       821
+weighted avg     0.9830    0.9829    0.9830       821

@@ -1,0 +1,15 @@
+index,image_path,true_label,true_class,pred_label,pred_class,confidence,true_class_prob
+514,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\766771e1-8e8e-4ce4-9af6-b4ed91c9e80a___RS_Late.B 6881.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.997054,0.002555
+808,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Leaf_Mold\f3ef6606-c66b-4fa0-a542-f09b78b6c3e0___Crnl_L.Mold 9120.JPG,3,Tomato_Leaf_Mold,2,Tomato_Late_Blight,0.994523,0.003991
+316,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Early_Blight\801083ae-26f9-4a9a-9e9a-f73fb18b67e5___RS_Erly.B 7363.JPG,1,Tomato_Early_Blight,3,Tomato_Leaf_Mold,0.933816,0.013767
+73,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Healthy\4959798b-5c9b-4f8e-b0a0-3778259614b1___CG1.JPG,0,Tomato_Healthy,2,Tomato_Late_Blight,0.928181,0.05547
+448,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\2df8ffd2-e986-46cf-93bf-f271921701c2___RS_Late.B 5441.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.893248,0.105016
+300,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Early_Blight\59dbd132-6e6c-4127-a218-b7602cbee670___RS_Erly.B 9449.JPG,1,Tomato_Early_Blight,2,Tomato_Late_Blight,0.762049,0.23664
+359,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Early_Blight\c882c715-ae30-410e-9585-bd7061cf44a4___RS_Erly.B 7734.JPG,1,Tomato_Early_Blight,2,Tomato_Late_Blight,0.756336,0.221749
+512,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\7076ebe9-be52-4b6e-a667-a3ce940a0cbc___RS_Late.B 5392.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.696473,0.293228
+470,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\435f78a8-70a8-4df9-b227-c6230301a17e___RS_Late.B 6672.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.67532,0.31368
+550,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\97e49ab1-3159-4659-9954-518c94690a9e___RS_Late.B 5534.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.610445,0.123212
+467,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\41474732-acc4-4262-931e-9b719abfb8c3___RS_Late.B 7048.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.587228,0.404999
+580,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Late_Blight\afb626cf-c9bf-498f-bdf2-c0286d96f681___GHLB2 Leaf 147.1.JPG,2,Tomato_Late_Blight,1,Tomato_Early_Blight,0.567802,0.194134
+251,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Early_Blight\15fb19ad-8a5a-4e1b-8ed2-c8d48b006b1d___RS_Erly.B 7674.JPG,1,Tomato_Early_Blight,2,Tomato_Late_Blight,0.566957,0.429607
+357,C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\dataset\split\test\Tomato_Early_Blight\c6e96373-484c-45da-b043-0a294a59ad2c___RS_Erly.B 7401.JPG,1,Tomato_Early_Blight,2,Tomato_Late_Blight,0.511979,0.481615

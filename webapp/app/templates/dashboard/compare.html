@@ -1,0 +1,110 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Model Comparison{% endblock %}
+
+{% block dashboard_content %}
+<p style="margin-bottom:2rem;color:var(--text-secondary);">
+  All metrics come from real predictions on the held-out test set (n=821).
+  No numbers are fabricated or estimated.
+</p>
+
+<!-- Summary cards -->
+<div class="stat-grid mb-4">
+  {% for key, m in benchmark.items() %}
+  <div class="stat-card {{ 'recommended' if m.status == 'recommended' else '' }}"
+       style="{{ 'border-color:var(--accent);background:rgba(39,174,96,0.05);' if m.status == 'recommended' else '' }}">
+    <div style="font-size:0.75rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+                color:var(--text-muted);margin-bottom:0.5rem;">{{ m.display }}</div>
+    <div class="stat-value">{{ m.accuracy }}%</div>
+    <div class="stat-label">Test Accuracy</div>
+    {% if m.status == 'recommended' %}
+    <div class="tag mt-2">✓ Recommended</div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Detailed comparison -->
+<div class="card mb-4">
+  <h3 style="margin-bottom:1.5rem;">Performance Metrics — Test Set (n=821)</h3>
+
+  {% set metrics = [
+    ('accuracy', 'Test Accuracy'),
+    ('f1', 'Macro F1'),
+    ('precision', 'Macro Precision'),
+    ('recall', 'Macro Recall'),
+  ] %}
+  {% set colors = {'custom_cnn':'#27ae60','mobilenetv2':'#3498db','cnn_xgboost':'#e67e22'} %}
+
+  {% for metric_key, metric_label in metrics %}
+  <div style="margin-bottom:2rem;">
+    <h4 style="margin-bottom:1rem;color:var(--text-secondary);font-size:0.9rem;
+               text-transform:uppercase;letter-spacing:0.06em;">{{ metric_label }}</h4>
+    {% for key, m in benchmark.items() %}
+    <div class="compare-bar-row">
+      <div class="compare-bar-header">
+        <span class="compare-bar-name">{{ m.display }}</span>
+        <span class="compare-bar-value">{{ m[metric_key] }}%</span>
+      </div>
+      <div class="compare-bar-bg">
+        <div class="compare-bar-fill"
+             data-pct="{{ m[metric_key] }}"
+             style="width:0%;background:{{ colors[key] }};"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Full metrics table -->
+<div class="card">
+  <h3 style="margin-bottom:1.25rem;">Full Benchmark Table</h3>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Accuracy</th>
+          <th>F1</th>
+          <th>Precision</th>
+          <th>Recall</th>
+          <th>Errors / 821</th>
+          <th>Inference</th>
+          <th>Size</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for key, m in benchmark.items() %}
+        <tr>
+          <td>
+            <strong>{{ m.display }}</strong>
+            {% if m.status == 'recommended' %}
+            <span class="tag" style="margin-left:0.4rem;font-size:0.7rem;">★</span>
+            {% endif %}
+          </td>
+          <td><strong style="color:var(--accent-lt);">{{ m.accuracy }}%</strong></td>
+          <td>{{ m.f1 }}%</td>
+          <td>{{ m.precision }}%</td>
+          <td>{{ m.recall }}%</td>
+          <td>{{ m.errors }}</td>
+          <td>{{ m.inference_ms }} ms</td>
+          <td>{{ m.size_kb }} KB</td>
+          <td>
+            <span class="model-badge
+              {{ 'badge-recommended' if m.status=='recommended'
+                 else ('badge-experimental' if m.status=='experimental'
+                       else 'badge-limited') }}">
+              {{ m.status.replace('_',' ').title() }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="text-xs mt-3" style="color:var(--text-muted);">
+    Source: outputs/phase5_model_comparison.csv · Evaluated on 821 held-out test images · 2026-10-15
+  </p>
+</div>
+{% endblock %}

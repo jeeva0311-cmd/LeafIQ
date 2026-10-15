@@ -1,0 +1,53 @@
+{
+  "cnn_checkpoint": "C:\\Users\\JEEVA PRAKASINI G\\Documents\\Resume project\\LeafIQ\\models\\custom_cnn_best.keras",
+  "cnn_input_hw": 64,
+  "embedding_dim": 256,
+  "class_names": [
+    "Tomato_Healthy",
+    "Tomato_Early_Blight",
+    "Tomato_Late_Blight",
+    "Tomato_Leaf_Mold"
+  ],
+  "batch_size": 128,
+  "splits": {
+    "train": {
+      "n_samples": 3815,
+      "feature_shape": [
+        3815,
+        256
+      ],
+      "label_counts": {
+        "Tomato_Healthy": 1113,
+        "Tomato_Early_Blight": 700,
+        "Tomato_Late_Blight": 1336,
+        "Tomato_Leaf_Mold": 666
+      }
+    },
+    "val": {
+      "n_samples": 816,
+      "feature_shape": [
+        816,
+        256
+      ],
+      "label_counts": {
+        "Tomato_Healthy": 238,
+        "Tomato_Early_Blight": 150,
+        "Tomato_Late_Blight": 286,
+        "Tomato_Leaf_Mold": 142
+      }
+    },
+    "test": {
+      "n_samples": 821,
+      "feature_shape": [
+        821,
+        256
+      ],
+      "label_counts": {
+        "Tomato_Healthy": 240,
+        "Tomato_Early_Blight": 150,
+        "Tomato_Late_Blight": 287,
+        "Tomato_Leaf_Mold": 144
+      }
+    }
+  }
+}

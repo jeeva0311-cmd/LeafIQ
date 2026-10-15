@@ -1,0 +1,13 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div style="position:fixed;top:80px;right:1.5rem;z-index:9000;display:flex;flex-direction:column;gap:0.5rem;max-width:360px;">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ 'error' if category=='error' else category }} flash-auto-hide"
+       style="box-shadow:var(--shadow-lg);">
+    <span>{{ '✕' if category=='error' else ('✓' if category=='success' else 'ℹ') }}</span>
+    <span>{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}

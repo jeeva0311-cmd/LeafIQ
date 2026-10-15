@@ -1,0 +1,13 @@
+Model: Custom CNN
+Checkpoint: C:\Users\JEEVA PRAKASINI G\Documents\Resume project\LeafIQ\models\custom_cnn_best.keras
+
+              precision    recall  f1-score   support
+
+     Healthy     0.9917    1.0000    0.9959       240
+Early Blight     0.9484    0.9800    0.9639       150
+ Late Blight     0.9893    0.9652    0.9771       287
+   Leaf Mold     0.9861    0.9861    0.9861       144
+
+    accuracy                         0.9817       821
+   macro avg     0.9789    0.9828    0.9807       821
+weighted avg     0.9820    0.9817    0.9817       821

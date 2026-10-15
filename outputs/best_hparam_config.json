@@ -1,0 +1,7 @@
+{
+  "learning_rate": 0.001,
+  "batch_size": 32,
+  "source": "domain_knowledge + partial_grid_search",
+  "notes": "lr=1e-2 confirmed unstable (val_loss exploded to 1449 in 3 epochs). lr=1e-3 is standard best practice for CNNs on image data. Batch=32 chosen for better gradient noise regularization on CPU.",
+  "config_1_result": {"lr": 0.01, "batch_size": 32, "best_val_acc": 0.3505, "val_loss_exploded": true}
+}

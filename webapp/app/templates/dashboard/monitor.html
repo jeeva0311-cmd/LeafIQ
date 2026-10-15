@@ -1,0 +1,198 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Monitoring{% endblock %}
+
+{% block dashboard_content %}
+<p style="color:var(--text-secondary);margin-bottom:1.5rem;">
+  Prediction performance tracking based on your historical data.
+  Drift detection requires at least 20 predictions.
+</p>
+
+<!-- ── Drift warning ─────────────────────────────────────────────────── -->
+{% if drift_warning %}
+<div class="alert alert-warning mb-4">
+  <strong>⚠ Data Pattern Warning:</strong> {{ drift_warning }}
+</div>
+{% endif %}
+
+<!-- ── Key stats ──────────────────────────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Total Predictions</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ avg_ms }} ms</div>
+    <div class="stat-label">Avg Inference</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ uncertain }}</div>
+    <div class="stat-label">Uncertain (&lt;60%)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ uncertain_pct }}%</div>
+    <div class="stat-label">Uncertain Rate</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+
+  <!-- Inference time range -->
+  <div class="card">
+    <h4 style="margin-bottom:1rem;">Inference Time (last 100)</h4>
+    {% if avg_ms > 0 %}
+    <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.9rem;">
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Average</span>
+        <strong style="color:var(--accent-lt);">{{ avg_ms }} ms</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Fastest</span>
+        <strong style="color:#27ae60;">{{ min_ms }} ms</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;">
+        <span style="color:var(--text-muted);">Slowest</span>
+        <strong style="color:#e67e22;">{{ max_ms }} ms</strong>
+      </div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.75rem;font-style:italic;">
+      CPU-only. First inference is slower (model load ~5s). Subsequent inferences use cached model.
+    </p>
+    {% else %}
+    <p style="color:var(--text-muted);">No inference data yet.</p>
+    {% endif %}
+  </div>
+
+  <!-- Model usage -->
+  <div class="card">
+    <h4 style="margin-bottom:1rem;">Model Usage</h4>
+    {% if model_counts %}
+    {% set total_m = model_counts.values()|sum %}
+    {% for model, count in model_counts.items() %}
+    <div class="compare-bar-row" style="margin-bottom:0.75rem;">
+      <div class="compare-bar-header">
+        <span class="compare-bar-name" style="font-size:0.85rem;">
+          {{ model.replace('_',' ').replace('cnn','CNN').replace('xgboost','XGBoost') }}
+        </span>
+        <span class="compare-bar-value">{{ count }} ({{ "%.0f"|format(count/total_m*100) }}%)</span>
+      </div>
+      <div class="compare-bar-bg" style="height:8px;">
+        <div class="compare-bar-fill"
+             data-pct="{{ "%.0f"|format(count/total_m*100) }}"
+             style="width:0%;background:{{ '#27ae60' if 'cnn' in model and 'xgb' not in model else '#e67e22' }};height:8px;">
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color:var(--text-muted);">No predictions yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ── Confidence distribution ────────────────────────────────────────── -->
+<div class="card mb-4">
+  <h4 style="margin-bottom:1rem;">Confidence Distribution (all predictions)</h4>
+  {% set colors = {'>=90%':'#27ae60','60-90%':'#f1c40f','40-60%':'#e67e22','<40%':'#e74c3c'} %}
+  {% if total > 0 %}
+  {% for bucket, count in conf_buckets.items() %}
+  <div class="compare-bar-row" style="margin-bottom:0.75rem;">
+    <div class="compare-bar-header">
+      <span class="compare-bar-name">{{ bucket }}</span>
+      <span class="compare-bar-value">{{ count }} ({{ "%.1f"|format(count/total*100) }}%)</span>
+    </div>
+    <div class="compare-bar-bg" style="height:10px;">
+      <div class="compare-bar-fill"
+           data-pct="{{ "%.1f"|format(count/total*100) }}"
+           style="width:0%;background:{{ colors.get(bucket,'var(--accent)') }};height:10px;">
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p style="color:var(--text-muted);">No predictions yet.</p>
+  {% endif %}
+</div>
+
+<!-- ── Daily activity ─────────────────────────────────────────────────── -->
+{% if daily %}
+<div class="card mb-4">
+  <h4 style="margin-bottom:1rem;">Daily Activity (last 14 days)</h4>
+  {% set max_d = daily|map(attribute=1)|max %}
+  {% for date, count in daily %}
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.4rem;">
+    <span style="font-size:0.78rem;color:var(--text-muted);width:95px;flex-shrink:0;">{{ date }}</span>
+    <div style="flex:1;background:var(--surface-3);border-radius:100px;height:8px;overflow:hidden;">
+      <div style="height:100%;border-radius:100px;background:var(--accent);
+                  width:{{ (count/max_d*100)|int }}%;"></div>
+    </div>
+    <span style="font-size:0.8rem;font-weight:600;color:var(--accent-lt);width:25px;text-align:right;">
+      {{ count }}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── Class trend (last 50) ─────────────────────────────────────────── -->
+{% if class_trend %}
+<div class="card mb-4">
+  <h4 style="margin-bottom:1rem;">Class Distribution (last 50 predictions)</h4>
+  {% set max_ct = class_trend.values()|max %}
+  {% set colors2 = {'Tomato_Healthy':'#27ae60','Tomato_Early_Blight':'#e67e22',
+                    'Tomato_Late_Blight':'#c0392b','Tomato_Leaf_Mold':'#8e44ad'} %}
+  {% for cls, count in class_trend.items()|sort(attribute='1',reverse=True) %}
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+    <span style="font-size:0.82rem;width:110px;flex-shrink:0;">
+      {{ cls.replace('Tomato_','') }}
+    </span>
+    <div style="flex:1;background:var(--surface-3);border-radius:100px;height:10px;overflow:hidden;">
+      <div style="height:100%;border-radius:100px;
+                  background:{{ colors2.get(cls,'var(--accent)') }};
+                  width:{{ (count/max_ct*100)|int }}%;"></div>
+    </div>
+    <span style="font-size:0.82rem;font-weight:600;
+                 color:{{ colors2.get(cls,'var(--accent-lt)') }};width:30px;text-align:right;">
+      {{ count }}
+    </span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ── Recent predictions ─────────────────────────────────────────────── -->
+{% if recent_preds %}
+<div class="card">
+  <h4 style="margin-bottom:1rem;">Recent 10 Predictions</h4>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>Image</th><th>Class</th><th>Confidence</th>
+            <th>Model</th><th>Time</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for p in recent_preds %}
+        <tr>
+          <td style="color:var(--text-muted);">{{ p.id }}</td>
+          <td><img src="{{ url_for('static',filename='uploads/'+p.filename) }}"
+                   style="width:36px;height:36px;object-fit:cover;border-radius:4px;
+                          border:1px solid var(--border);"></td>
+          <td>{{ p.predicted_class.replace('Tomato_','') }}</td>
+          <td>
+            <span style="color:{{ '#27ae60' if p.confidence>=0.80 else ('#e67e22' if p.confidence>=0.60 else '#e74c3c') }};font-weight:600;">
+              {{ "%.1f"|format(p.confidence*100) }}%
+            </span>
+          </td>
+          <td><span class="tag" style="font-size:0.7rem;">
+            {{ p.model_used.replace('_',' ').replace('cnn','CNN') }}</span></td>
+          <td style="color:var(--text-muted);font-size:0.8rem;">
+            {{ "%.0f"|format(p.inference_ms or 0) }} ms</td>
+          <td style="color:var(--text-muted);font-size:0.78rem;">
+            {{ p.created_at.strftime('%b %d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

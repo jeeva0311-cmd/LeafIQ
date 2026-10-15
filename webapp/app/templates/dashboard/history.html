@@ -1,0 +1,212 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Prediction History{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- ── Filter bar ───────────────────────────────────────────────────────── -->
+<form method="GET" action="{{ url_for('dashboard.history') }}"
+      style="background:var(--surface-2);border:1px solid var(--border);
+             border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1.5rem;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.75rem;align-items:end;">
+
+    <!-- Class -->
+    <div>
+      <label class="form-label">Disease Class</label>
+      <select name="cls" class="form-control" style="padding:0.6rem 0.75rem;">
+        <option value="">All classes</option>
+        {% for c in class_names %}
+        <option value="{{ c }}" {{ 'selected' if filters.cls_filter == c }}>
+          {{ c.replace('Tomato_','') }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Date range -->
+    <div>
+      <label class="form-label">From Date</label>
+      <input type="date" name="date_from" class="form-control"
+             value="{{ filters.date_from }}" style="padding:0.6rem 0.75rem;">
+    </div>
+    <div>
+      <label class="form-label">To Date</label>
+      <input type="date" name="date_to" class="form-control"
+             value="{{ filters.date_to }}" style="padding:0.6rem 0.75rem;">
+    </div>
+
+    <!-- Confidence range -->
+    <div>
+      <label class="form-label">Min Confidence %</label>
+      <input type="number" name="conf_min" class="form-control"
+             min="0" max="100" step="1"
+             value="{{ (filters.conf_min * 100)|int if filters.conf_min else '' }}"
+             placeholder="0" style="padding:0.6rem 0.75rem;">
+    </div>
+    <div>
+      <label class="form-label">Max Confidence %</label>
+      <input type="number" name="conf_max" class="form-control"
+             min="0" max="100" step="1"
+             value="{{ (filters.conf_max * 100)|int if filters.conf_max < 1 else '' }}"
+             placeholder="100" style="padding:0.6rem 0.75rem;">
+    </div>
+
+    <!-- Model -->
+    <div>
+      <label class="form-label">Model</label>
+      <select name="model" class="form-control" style="padding:0.6rem 0.75rem;">
+        <option value="">All models</option>
+        <option value="custom_cnn"   {{ 'selected' if filters.model_filter == 'custom_cnn' }}>Custom CNN</option>
+        <option value="cnn_xgboost" {{ 'selected' if filters.model_filter == 'cnn_xgboost' }}>CNN+XGBoost</option>
+      </select>
+    </div>
+
+    <!-- Search -->
+    <div>
+      <label class="form-label">Search Filename</label>
+      <input type="text" name="q" class="form-control"
+             value="{{ filters.search }}" placeholder="leaf.jpg"
+             style="padding:0.6rem 0.75rem;">
+    </div>
+
+  </div>
+
+  <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap;align-items:center;">
+    <button type="submit" class="btn btn-primary btn-sm">🔍 Apply Filters</button>
+    <a href="{{ url_for('dashboard.history') }}" class="btn btn-ghost btn-sm">✕ Clear</a>
+    <span style="font-size:0.85rem;color:var(--text-muted);margin-left:auto;">
+      {{ total }} matching record{{ 's' if total != 1 else '' }}
+    </span>
+    <a href="{{ url_for('dashboard.history_export_csv', **request.args) }}"
+       class="btn btn-secondary btn-sm">⬇ CSV</a>
+    <a href="{{ url_for('dashboard.history_export_pdf', **request.args) }}"
+       class="btn btn-secondary btn-sm">⬇ PDF</a>
+    <a href="{{ url_for('dashboard.detect') }}" class="btn btn-primary btn-sm">+ New</a>
+  </div>
+</form>
+
+<!-- ── Table ──────────────────────────────────────────────────────────────── -->
+{% if preds.items %}
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Image</th>
+        <th>Diagnosis</th>
+        <th>Health</th>
+        <th>Confidence</th>
+        <th>Model</th>
+        <th>Grad-CAM</th>
+        <th>Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pred in preds.items %}
+      {% set hs = pred.health_score() %}
+      <tr>
+        <td style="color:var(--text-muted);">{{ pred.id }}</td>
+        <td>
+          <img src="{{ url_for('static', filename='uploads/' + pred.filename) }}"
+               alt="leaf"
+               style="width:48px;height:48px;object-fit:cover;
+                      border-radius:var(--radius-sm);border:1px solid var(--border);">
+        </td>
+        <td>
+          <span style="font-weight:600;">
+            {{ pred.predicted_class.replace('Tomato_','').replace('_',' ') }}
+          </span>
+        </td>
+        <td>
+          <span style="font-size:0.78rem;font-weight:600;color:{{ hs.color }};">
+            {{ hs.icon }} {{ hs.label }}
+          </span>
+        </td>
+        <td>
+          <span style="color:var(--accent-lt);font-weight:600;">
+            {{ "%.1f"|format(pred.confidence*100) }}%
+          </span>
+        </td>
+        <td>
+          <span class="tag" style="font-size:0.7rem;">
+            {{ pred.model_used.replace('_',' ').replace('cnn','CNN').replace('xgboost','XGBoost') }}
+          </span>
+        </td>
+        <td style="text-align:center;">
+          {% if pred.gradcam_file %}
+          <a href="{{ url_for('dashboard.explainability_detail', pred_id=pred.id) }}"
+             title="View Grad-CAM" style="font-size:1rem;">🧠</a>
+          {% else %}
+          <span style="color:var(--text-muted);font-size:0.8rem;">—</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--text-muted);font-size:0.82rem;">
+          {{ pred.created_at.strftime('%b %d, %Y') }}
+        </td>
+        <td>
+          <div style="display:flex;gap:0.35rem;">
+            <a href="{{ url_for('dashboard.result', pred_id=pred.id) }}"
+               class="btn btn-ghost btn-sm">View</a>
+            <form method="POST"
+                  action="{{ url_for('dashboard.delete_prediction', pred_id=pred.id) }}"
+                  onsubmit="return confirm('Delete this prediction?');"
+                  style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-danger btn-sm">✕</button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination (preserve filters) -->
+{% if preds.pages > 1 %}
+<div class="pagination mt-3">
+  {% set args = request.args.to_dict() %}
+  {% if preds.has_prev %}
+    {% set _ = args.update({'page': preds.prev_num}) %}
+    <a href="{{ url_for('dashboard.history', **args) }}">‹</a>
+  {% endif %}
+  {% for p in preds.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+    {% if p %}
+      {% set _ = args.update({'page': p}) %}
+      {% if p == preds.page %}
+        <span class="current">{{ p }}</span>
+      {% else %}
+        <a href="{{ url_for('dashboard.history', **args) }}">{{ p }}</a>
+      {% endif %}
+    {% else %}
+      <span>…</span>
+    {% endif %}
+  {% endfor %}
+  {% if preds.has_next %}
+    {% set _ = args.update({'page': preds.next_num}) %}
+    <a href="{{ url_for('dashboard.history', **args) }}">›</a>
+  {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div style="text-align:center;padding:4rem 2rem;">
+  <div style="font-size:3.5rem;margin-bottom:1rem;">🌿</div>
+  <h3 style="margin-bottom:0.75rem;">
+    {% if filters.cls_filter or filters.date_from or filters.date_to or filters.search or filters.model_filter %}
+    No results for these filters
+    {% else %}
+    No predictions yet
+    {% endif %}
+  </h3>
+  <p style="margin-bottom:1.5rem;">
+    {% if filters.cls_filter or filters.date_from or filters.date_to or filters.search or filters.model_filter %}
+    Try adjusting or <a href="{{ url_for('dashboard.history') }}" style="color:var(--accent-lt);">clearing</a> the filters.
+    {% else %}
+    Upload your first leaf image to get started.
+    {% endif %}
+  </p>
+  <a href="{{ url_for('dashboard.detect') }}" class="btn btn-primary">🔍 Start Detecting</a>
+</div>
+{% endif %}
+{% endblock %}

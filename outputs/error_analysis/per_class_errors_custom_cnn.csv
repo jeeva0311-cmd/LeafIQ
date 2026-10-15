@@ -1,0 +1,5 @@
+class_label,class_name,total_samples,correct,errors,error_rate_pct,confused_to
+0,Tomato_Healthy,240,240,0,0.0,
+1,Tomato_Early_Blight,150,147,3,2.0,Tomato_Late_Blight:2; Tomato_Leaf_Mold:1
+2,Tomato_Late_Blight,287,277,10,3.4843,Tomato_Early_Blight:8; Tomato_Leaf_Mold:1; Tomato_Healthy:1
+3,Tomato_Leaf_Mold,144,142,2,1.3889,Tomato_Healthy:1; Tomato_Late_Blight:1

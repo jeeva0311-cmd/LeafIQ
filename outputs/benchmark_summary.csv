@@ -1,0 +1,4 @@
+model_key,display_name,status,accuracy_pct,f1_macro_pct,precision_macro_pct,recall_macro_pct,inference_ms,n_params,params_per_accuracy,best_val_acc_training_pct,note
+custom_cnn,Custom CNN,OK,98.17,98.07,97.89,98.28,74.41,323172,3292.0,98.04,
+mobilenetv2,MobileNetV2-A,OK,61.88,55.39,63.81,55.67,324.51,2422852,39154.0,66.05,
+mobilenetv2_ft,MobileNetV2-FT,TRAINING_FAILED,N/A,N/A,N/A,N/A,,N/A,N/A,43.26,Model did not converge (val_acc=0.4326). Results would be meaningless.

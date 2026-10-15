@@ -1,0 +1,41 @@
+{
+  "model_key": "cnn_xgboost",
+  "display_name": "CNN + XGBoost",
+  "cnn_checkpoint": "models/custom_cnn_best.keras",
+  "feature_dir": "outputs/features",
+  "embedding_dim": 256,
+  "class_names": [
+    "Tomato_Healthy",
+    "Tomato_Early_Blight",
+    "Tomato_Late_Blight",
+    "Tomato_Leaf_Mold"
+  ],
+  "n_classes": 4,
+  "seed": 42,
+  "xgboost_params": {
+    "objective": "multi:softprob",
+    "num_class": 4,
+    "eval_metric": "mlogloss",
+    "learning_rate": 0.05,
+    "max_depth": 4,
+    "min_child_weight": 3,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "gamma": 0.1,
+    "reg_alpha": 0.1,
+    "reg_lambda": 1.0,
+    "seed": 42,
+    "nthread": -1,
+    "tree_method": "hist",
+    "verbosity": 0
+  },
+  "best_hparams": {
+    "learning_rate": 0.05,
+    "max_depth": 4,
+    "min_child_weight": 3,
+    "best_round": 173
+  },
+  "n_rounds": 200,
+  "val_accuracy": 1.0,
+  "val_f1_macro": 1.0
+}

@@ -1,0 +1,16 @@
+LeafIQ - Phase 4 Benchmark Summary
+========================================================================
+Model                      Status                Acc%     F1%   Prec%    Rec%  ms/img    Params
+------------------------------------------------------------------------
+Custom CNN                 OK                   98.17   98.07   97.89   98.28   74.41   323,172
+MobileNetV2-A              OK                   61.88   55.39   63.81   55.67  324.51 2,422,852
+MobileNetV2-FT             TRAINING_FAILED        N/A     N/A     N/A     N/A               N/A
+========================================================================
+
+Notes:
+  - All metrics on held-out test set (821 images, never seen during training)
+  - Inference time measured on CPU (single-image batch, TensorFlow 2.18)
+  - N/A = model did not converge; evaluation skipped to avoid fabricated results
+  - Custom CNN trained from scratch on 64x64 input
+  - MobileNetV2-A: frozen base, head-only training on 96x96 input
+  - MobileNetV2-FT: fine-tune last 10 layers on 96x96 -- FAILED (overfitting)

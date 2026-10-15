@@ -1,0 +1,194 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Result — {{ pred.predicted_class.replace('Tomato_','') }}{% endblock %}
+
+{% block dashboard_content %}
+{% set info  = class_info[pred.predicted_class] %}
+{% set probs = pred.probs_dict() %}
+
+<a href="{{ url_for('dashboard.detect') }}" class="btn btn-ghost btn-sm mb-4">
+  ← New Detection
+</a>
+
+<!-- ── Main result card ──────────────────────────────────────────────── -->
+<div class="result-hero">
+  <div class="result-image">
+    <img src="{{ url_for('static', filename='uploads/' + pred.filename) }}"
+         alt="Uploaded leaf image">
+    <p class="text-xs text-center mt-1" style="color:var(--text-muted);">{{ pred.original_name }}</p>
+  </div>
+
+  <div class="result-body">
+    <div class="result-class-badge"
+         style="background:{{ info.color }}22;color:{{ info.color }};border:1px solid {{ info.color }}55;">
+      {{ info.icon }} {{ pred.predicted_class.replace('Tomato_','') }}
+    </div>
+
+    <div class="result-prediction">{{ pred.predicted_class.replace('_',' ') }}</div>
+    <div class="result-confidence">
+      Confidence: <strong>{{ "%.1f"|format(pred.confidence * 100) }}%</strong>
+      &nbsp;·&nbsp; {{ pred.model_used.replace('_',' ').title() }}
+      &nbsp;·&nbsp; {{ "%.0f"|format(pred.inference_ms or 0) }} ms
+    </div>
+
+    <!-- ── Uncertainty warning (Phase 8) ─────────────────────────── -->
+    {% if uncertainty.is_uncertain %}
+    <div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.35);
+                border-radius:var(--radius);padding:0.85rem 1.1rem;margin-bottom:1rem;">
+      <strong style="color:#e74c3c;font-size:0.88rem;">⚠ Uncertain Prediction
+        ({{ uncertainty.confidence_pct }}%)</strong>
+      <p style="font-size:0.85rem;margin-top:0.3rem;color:#fab3ab;">{{ uncertainty.warning }}</p>
+    </div>
+    {% endif %}
+
+    <p style="font-size:0.95rem;margin-bottom:1rem;">{{ info.description }}</p>
+
+    <!-- ── Top-3 classes (Phase 8) ───────────────────────────────── -->
+    <h4 style="margin-bottom:0.75rem;font-size:0.9rem;color:var(--text-secondary);
+               text-transform:uppercase;letter-spacing:0.05em;">Top-3 Predictions</h4>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.25rem;">
+      {% for t in top3 %}
+      {% set tcls = t.class_name %}
+      {% set tcol = class_info[tcls].color if tcls in class_info else '#27ae60' %}
+      <div style="flex:1;min-width:130px;background:var(--surface-3);
+                  border:1.5px solid {{ tcol }}{{ '88' if t.rank==1 else '33' }};
+                  border-radius:var(--radius);padding:0.75rem;text-align:center;">
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.06em;
+                    color:var(--text-muted);text-transform:uppercase;">
+          #{{ t.rank }}{% if t.rank==1 %} Top pick{% endif %}
+        </div>
+        <div style="font-size:0.88rem;font-weight:600;margin:0.3rem 0;
+                    color:{{ tcol }};">
+          {{ tcls.replace('Tomato_','') }}
+        </div>
+        <div style="font-size:1rem;font-weight:800;color:var(--text-primary);">
+          {{ "%.1f"|format(t.probability*100) }}%
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- ── Plant Health Score ── -->
+    <div style="background:{{ health.color }}18;border:1px solid {{ health.color }}44;
+                border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem;">
+      <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem;">
+        <span style="font-size:1.3rem;">{{ health.icon }}</span>
+        <strong style="font-size:1rem;color:{{ health.color }};">
+          Plant Health Indicator: {{ health.label }}
+        </strong>
+      </div>
+      <p style="font-size:0.88rem;margin-bottom:0.5rem;">{{ health.note }}</p>
+      <p style="font-size:0.75rem;color:var(--text-muted);font-style:italic;">
+        {{ health.threshold_note }}
+      </p>
+    </div>
+
+    <!-- ── Recommended action ── -->
+    <div style="background:rgba(39,174,96,0.08);border:1px solid rgba(39,174,96,0.2);
+                border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;">
+      <strong style="color:var(--accent-lt);font-size:0.85rem;text-transform:uppercase;
+                     letter-spacing:0.05em;">Recommended Action</strong>
+      <p style="margin-top:0.4rem;font-size:0.9rem;">{{ info.action }}</p>
+    </div>
+
+    <!-- ── Class probabilities ── -->
+    <h4 style="margin-bottom:1rem;">Top-4 Class Probabilities</h4>
+    <div class="prob-bars">
+      {% for cls, prob in probs.items()|sort(attribute='1',reverse=True) %}
+      <div class="prob-row">
+        <span class="prob-label">{{ cls.replace('Tomato_','').replace('_',' ') }}</span>
+        <div class="prob-bar-bg">
+          <div class="prob-bar-fill"
+               data-pct="{{ "%.1f"|format(prob*100) }}"
+               style="width:0%;background:{{ class_info[cls].color if cls in class_info else 'var(--accent)' }};">
+          </div>
+        </div>
+        <span class="prob-pct">{{ "%.1f"|format(prob*100) }}%</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div style="margin-top:1.5rem;display:flex;gap:0.75rem;flex-wrap:wrap;">
+      <a href="{{ url_for('dashboard.detect') }}" class="btn btn-primary">🔍 Analyse Another</a>
+      <a href="{{ url_for('dashboard.history') }}" class="btn btn-secondary">📋 View History</a>
+      {% if pred.gradcam_file %}
+      <a href="{{ url_for('dashboard.explainability_detail', pred_id=pred.id) }}"
+         class="btn btn-ghost">🧠 Grad-CAM Detail</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- ── Grad-CAM ─────────────────────────────────────────────────────────── -->
+{% if pred.gradcam_file %}
+<div class="card mt-4">
+  <h3 style="margin-bottom:0.5rem;">🧠 Grad-CAM Heatmap</h3>
+  <p style="font-size:0.88rem;margin-bottom:1rem;">
+    The heatmap shows which leaf regions influenced this prediction.
+    Red/yellow = high activation · Blue = low activation.
+    Generated from the last Conv2D layer of the Custom CNN via tf.GradientTape.
+  </p>
+  <img src="{{ url_for('static', filename='uploads/' + pred.gradcam_file) }}"
+       alt="Grad-CAM heatmap"
+       style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);">
+</div>
+{% else %}
+<div class="card mt-4" style="opacity:0.65;">
+  <h3 style="margin-bottom:0.4rem;">🧠 Grad-CAM Heatmap</h3>
+  <p style="font-size:0.9rem;">Grad-CAM was not available for this prediction (generation failed or was skipped).</p>
+</div>
+{% endif %}
+
+<!-- ── Similar Reference Cases ──────────────────────────────────────────── -->
+<div class="card mt-4">
+  <h3 style="margin-bottom:0.25rem;">🔎 Similar Reference Cases</h3>
+  <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.25rem;">
+    Previous predictions with the same class, ordered by confidence proximity.
+    These are <strong>reference cases only</strong> — not evidence of the current diagnosis.
+  </p>
+
+  {% if similar %}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1rem;">
+    {% for s in similar %}
+    <a href="{{ url_for('dashboard.result', pred_id=s.id) }}"
+       style="text-decoration:none;">
+      <div style="background:var(--surface-3);border:1px solid var(--border);
+                  border-radius:var(--radius);overflow:hidden;
+                  transition:border-color var(--transition);"
+           onmouseover="this.style.borderColor='var(--accent)'"
+           onmouseout="this.style.borderColor='var(--border)'">
+        <img src="{{ url_for('static', filename='uploads/' + s.filename) }}"
+             alt="reference case"
+             style="width:100%;height:110px;object-fit:cover;">
+        <div style="padding:0.6rem 0.75rem;">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--text-primary);">
+            {{ s.predicted_class.replace('Tomato_','') }}
+          </div>
+          <div style="font-size:0.75rem;color:var(--accent-lt);">
+            {{ "%.1f"|format(s.confidence*100) }}% confidence
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.2rem;">
+            {{ s.created_at.strftime('%b %d, %Y') }}
+          </div>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p style="color:var(--text-muted);font-size:0.9rem;">
+    No previous predictions with this class. Upload more images to build reference cases.
+  </p>
+  {% endif %}
+</div>
+
+<!-- ── Metadata ───────────────────────────────────────────────────────────── -->
+<div class="card mt-3" style="font-size:0.85rem;color:var(--text-muted);">
+  <div class="flex gap-3" style="flex-wrap:wrap;">
+    <span>📅 {{ pred.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    <span>🤖 {{ pred.model_used.replace('_',' ').title() }}</span>
+    <span>⚡ {{ "%.1f"|format(pred.inference_ms or 0) }} ms</span>
+    <span>🗂 {{ pred.original_name }}</span>
+    <span>🆔 #{{ pred.id }}</span>
+  </div>
+</div>
+{% endblock %}

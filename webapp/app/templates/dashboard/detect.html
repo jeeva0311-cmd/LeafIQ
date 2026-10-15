@@ -1,0 +1,175 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Image Detection{% endblock %}
+
+{% block dashboard_content %}
+<div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="spinner"></div>
+  <p>Running AI inference on your leaf image…</p>
+  <p style="font-size:0.82rem;margin-top:0.4rem;">~1–5 seconds on CPU</p>
+</div>
+
+<div style="max-width:800px;">
+  <p style="margin-bottom:1.5rem;color:var(--text-secondary);">
+    Upload a tomato leaf image. The Custom CNN achieves
+    <strong style="color:var(--accent-lt)">98.17%</strong> accuracy on the held-out test set.
+  </p>
+
+  <form id="uploadForm" method="POST" action="{{ url_for('dashboard.upload') }}"
+        enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ── Upload zone ─────────────────────────────────────────────── -->
+    <div class="upload-zone" onclick="document.getElementById('imageUpload').click()">
+      <input type="file" id="imageUpload" name="image"
+             accept=".jpg,.jpeg,.png,.bmp,.webp" style="display:none;">
+      <div id="uploadText">
+        <div class="upload-icon">🌿</div>
+        <h3>Drop your leaf image here</h3>
+        <p>or <strong style="color:var(--accent-lt)">click to browse</strong></p>
+        <p class="text-xs mt-2" style="color:var(--text-muted);">
+          JPG · PNG · BMP · WebP — max 16 MB · min 8×8 px
+        </p>
+      </div>
+      <div id="previewWrap" class="upload-preview hidden">
+        <img id="previewImg" src="" alt="Preview">
+      </div>
+    </div>
+
+    <!-- ── Image info (shown after selection) ─────────────────────── -->
+    <div id="fileInfo" style="display:none;margin-top:0.75rem;font-size:0.82rem;
+                               color:var(--text-muted);padding:0.5rem 0.75rem;
+                               background:var(--surface-3);border-radius:var(--radius-sm);">
+      <span id="fileName"></span> · <span id="fileSize"></span>
+    </div>
+
+    <!-- ── Model selector ─────────────────────────────────────────── -->
+    <div class="mt-3">
+      <label class="form-label">Model</label>
+      <div class="model-selector">
+        <div class="model-option">
+          <input type="radio" name="model" id="m_cnn" value="custom_cnn" checked>
+          <label for="m_cnn">
+            <span class="model-option-name">Custom CNN</span>
+            <span class="model-option-detail">Recommended · 323K params</span>
+            <span class="model-option-acc">98.17% accuracy</span>
+          </label>
+        </div>
+        <div class="model-option">
+          <input type="radio" name="model" id="m_xgb" value="cnn_xgboost">
+          <label for="m_xgb">
+            <span class="model-option-name">CNN + XGBoost</span>
+            <span class="model-option-detail">Hybrid · Experimental</span>
+            <span class="model-option-acc">98.29% accuracy</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Advanced options ───────────────────────────────────────── -->
+    <details style="margin-top:1.25rem;">
+      <summary style="cursor:pointer;font-size:0.9rem;color:var(--text-secondary);
+                       list-style:none;display:flex;align-items:center;gap:0.4rem;
+                       user-select:none;">
+        <span id="advToggle">▶</span> Advanced Options
+      </summary>
+      <div style="margin-top:1rem;padding:1.25rem;background:var(--surface-3);
+                  border-radius:var(--radius);border:1px solid var(--border);">
+
+        <!-- Confidence threshold display -->
+        <div class="form-group" style="margin-bottom:1.1rem;">
+          <label class="form-label" for="confThresh">
+            Uncertainty Warning Threshold — <span id="confLabel">{{ conf_thresh }}%</span>
+          </label>
+          <input type="range" id="confThresh" name="conf_thresh"
+                 min="0" max="100" step="5" value="{{ conf_thresh }}"
+                 style="width:100%;accent-color:var(--accent);cursor:pointer;"
+                 oninput="document.getElementById('confLabel').textContent=this.value+'%'">
+          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.4rem;">
+            Predictions below this confidence will display an uncertainty warning.
+            This does not affect the model output — only the UI label.
+          </p>
+        </div>
+
+        <!-- Skip Grad-CAM -->
+        <div class="form-check" style="gap:0.6rem;">
+          <input type="checkbox" id="skipGradcam" name="skip_gradcam" value="1">
+          <label for="skipGradcam" style="font-size:0.88rem;color:var(--text-secondary);cursor:pointer;">
+            Skip Grad-CAM (faster — ~1s vs ~5s)
+          </label>
+        </div>
+
+      </div>
+    </details>
+
+    <button type="submit" id="submitBtn" class="btn btn-primary btn-lg mt-3" disabled>
+      🔍 Analyse Leaf
+    </button>
+    <p id="validationMsg" style="color:var(--error);font-size:0.85rem;margin-top:0.5rem;display:none;"></p>
+  </form>
+</div>
+
+<!-- ── Disease classes reference ──────────────────────────────────────── -->
+<div class="mt-6">
+  <h3 style="margin-bottom:1.25rem;">Detectable Conditions</h3>
+  <div class="grid-4">
+    {% for key, info in class_info.items() %}
+    <div class="card" style="border-left:3px solid {{ info.color }};">
+      <div style="font-size:1.4rem;margin-bottom:0.4rem;">{{ info.icon }}</div>
+      <div style="font-weight:600;font-size:0.9rem;">{{ key.replace('Tomato_','') }}</div>
+      <p style="font-size:0.8rem;margin-top:0.3rem;">{{ info.description[:80] }}…</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% block extra_scripts %}
+<script>
+const ALLOWED = ['jpg','jpeg','png','bmp','webp'];
+const MAX_MB  = 16;
+
+document.getElementById('uploadForm').addEventListener('submit', function(e) {
+  const inp = document.getElementById('imageUpload');
+  if (!inp.files || !inp.files[0]) {
+    e.preventDefault();
+    showMsg('Please select an image first.');
+    return;
+  }
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+});
+
+document.getElementById('imageUpload').addEventListener('change', function() {
+  const file = this.files[0];
+  const msg  = document.getElementById('validationMsg');
+  const btn  = document.getElementById('submitBtn');
+  const fi   = document.getElementById('fileInfo');
+  if (!file) { btn.disabled=true; fi.style.display='none'; return; }
+
+  const ext = file.name.split('.').pop().toLowerCase();
+  const mb  = (file.size/1024/1024).toFixed(2);
+
+  if (!ALLOWED.includes(ext)) {
+    showMsg(`Unsupported type ".${ext}". Allowed: ${ALLOWED.join(', ')}`);
+    btn.disabled = true; return;
+  }
+  if (file.size > MAX_MB*1024*1024) {
+    showMsg(`File too large (${mb} MB). Maximum is ${MAX_MB} MB.`);
+    btn.disabled = true; return;
+  }
+  msg.style.display='none';
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = mb + ' MB';
+  fi.style.display = 'block';
+  btn.disabled = false;
+});
+
+document.querySelector('details').addEventListener('toggle', function() {
+  document.getElementById('advToggle').textContent = this.open ? '▼' : '▶';
+});
+
+function showMsg(m) {
+  const el = document.getElementById('validationMsg');
+  el.textContent = m; el.style.display = 'block';
+}
+</script>
+{% endblock %}
+{% endblock %}

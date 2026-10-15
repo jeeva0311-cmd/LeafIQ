@@ -1,0 +1,23 @@
+<nav class="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="{{ url_for('main.index') }}" class="nav-logo">
+        🌿 Leaf<span>IQ</span>
+      </a>
+      <div class="nav-links">
+        <a href="{{ url_for('main.index') }}#features">Features</a>
+        <a href="{{ url_for('main.index') }}#how-it-works">How It Works</a>
+        <a href="{{ url_for('main.index') }}#models">Models</a>
+      </div>
+      <div class="nav-cta">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('dashboard.detect') }}" class="btn btn-primary btn-sm">Dashboard</a>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm">Sign Out</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}"  class="btn btn-ghost btn-sm">Sign In</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>

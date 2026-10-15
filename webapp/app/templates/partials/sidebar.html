@@ -1,0 +1,56 @@
+<aside class="sidebar">
+  <a href="{{ url_for('main.index') }}" class="sidebar-logo">🌿 Leaf<span>IQ</span></a>
+  <nav class="sidebar-nav">
+
+    <p class="sidebar-section-label">Detection</p>
+    <a href="{{ url_for('dashboard.detect') }}"
+       class="sidebar-link {{ 'active' if request.endpoint in ('dashboard.detect','dashboard.result') }}">
+      <span class="icon">🔍</span> Image Detection
+    </a>
+    <a href="{{ url_for('dashboard.history') }}"
+       class="sidebar-link {{ 'active' if request.endpoint == 'dashboard.history' }}">
+      <span class="icon">📋</span> Prediction History
+    </a>
+
+    <p class="sidebar-section-label">Analysis</p>
+    <a href="{{ url_for('dashboard.compare') }}"
+       class="sidebar-link {{ 'active' if request.endpoint == 'dashboard.compare' }}">
+      <span class="icon">📊</span> Model Comparison
+    </a>
+    <a href="{{ url_for('dashboard.explainability') }}"
+       class="sidebar-link {{ 'active' if request.endpoint in ('dashboard.explainability','dashboard.explainability_detail') }}">
+      <span class="icon">🧠</span> Explainable AI
+    </a>
+    <a href="{{ url_for('dashboard.reports') }}"
+       class="sidebar-link {{ 'active' if request.endpoint == 'dashboard.reports' }}">
+      <span class="icon">📈</span> Reports
+    </a>
+
+    <p class="sidebar-section-label">Intelligence</p>
+    <a href="{{ url_for('dashboard.evaluate') }}"
+       class="sidebar-link {{ 'active' if request.endpoint in ('dashboard.evaluate','dashboard.evaluate_run') }}">
+      <span class="icon">🎯</span> Model Evaluation
+    </a>
+    <a href="{{ url_for('dashboard.monitor') }}"
+       class="sidebar-link {{ 'active' if request.endpoint == 'dashboard.monitor' }}">
+      <span class="icon">📡</span> Monitoring
+    </a>
+
+    <p class="sidebar-section-label">Account</p>
+    <a href="{{ url_for('dashboard.settings') }}"
+       class="sidebar-link {{ 'active' if request.endpoint == 'dashboard.settings' }}">
+      <span class="icon">⚙️</span> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="avatar">{{ current_user.username[0].upper() }}</div>
+      <div>
+        <div class="sidebar-username">{{ current_user.username }}</div>
+        <div class="sidebar-email">{{ current_user.email }}</div>
+      </div>
+    </div>
+    <a href="{{ url_for('auth.logout') }}" class="btn btn-ghost btn-sm btn-full">Sign Out</a>
+  </div>
+</aside>

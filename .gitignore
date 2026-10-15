@@ -1,0 +1,62 @@
+# ── Python ──────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.whl
+
+# ── Virtual environments ─────────────────────────────────────────────────
+venv/
+venv311/
+.venv/
+env/
+
+# ── Jupyter ──────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Large numpy cache files (too big for GitHub: >100 MB each) ───────────
+outputs/cache/*.npy
+outputs/features/*.npy
+
+# ── Dataset raw images (too large, not needed in repo) ───────────────────
+dataset/raw/
+dataset/split/
+
+# ── Uploaded user images (runtime data, not source) ─────────────────────
+webapp/app/static/uploads/
+
+# ── SQLite database (runtime data) ───────────────────────────────────────
+webapp/leafiq.db
+*.db
+*.sqlite3
+
+# ── Secrets and environment ───────────────────────────────────────────────
+.env
+*.pem
+*.key
+
+# ── OS files ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.suo
+*.user
+
+# ── Temp / log files ─────────────────────────────────────────────────────
+outputs/_*.txt
+outputs/_*.html
+*.log
+
+# ── TensorFlow / Keras compile cache ─────────────────────────────────────
+*.keras.metadata

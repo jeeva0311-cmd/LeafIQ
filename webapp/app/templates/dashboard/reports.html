@@ -1,0 +1,169 @@
+{% extends "dashboard/base_dashboard.html" %}
+{% block page_title %}Reports{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- ── Filter bar ───────────────────────────────────────────────────────── -->
+<form method="GET" action="{{ url_for('dashboard.reports') }}"
+      style="background:var(--surface-2);border:1px solid var(--border);
+             border-radius:var(--radius-lg);padding:1.1rem 1.4rem;margin-bottom:1.5rem;">
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.65rem;align-items:end;">
+    <div>
+      <label class="form-label">Class</label>
+      <select name="cls" class="form-control" style="padding:0.55rem 0.7rem;">
+        <option value="">All classes</option>
+        {% for c in class_names %}
+        <option value="{{ c }}" {{ 'selected' if filters.cls_filter == c }}>
+          {{ c.replace('Tomato_','') }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="form-label">From Date</label>
+      <input type="date" name="date_from" class="form-control"
+             value="{{ filters.date_from }}" style="padding:0.55rem 0.7rem;">
+    </div>
+    <div>
+      <label class="form-label">To Date</label>
+      <input type="date" name="date_to" class="form-control"
+             value="{{ filters.date_to }}" style="padding:0.55rem 0.7rem;">
+    </div>
+    <div>
+      <label class="form-label">Model</label>
+      <select name="model" class="form-control" style="padding:0.55rem 0.7rem;">
+        <option value="">All</option>
+        <option value="custom_cnn"  {{ 'selected' if filters.model_filter == 'custom_cnn' }}>Custom CNN</option>
+        <option value="cnn_xgboost"{{ 'selected' if filters.model_filter == 'cnn_xgboost' }}>CNN+XGBoost</option>
+      </select>
+    </div>
+  </div>
+  <div style="display:flex;gap:0.6rem;margin-top:0.8rem;flex-wrap:wrap;align-items:center;">
+    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+    <a href="{{ url_for('dashboard.reports') }}" class="btn btn-ghost btn-sm">Clear</a>
+    {% if filter_summary != 'none' %}
+    <span class="tag" style="font-size:0.75rem;">{{ filter_summary }}</span>
+    {% endif %}
+    <span style="font-size:0.82rem;color:var(--text-muted);margin-left:auto;">
+      {{ total }} record{{ 's' if total != 1 else '' }}
+    </span>
+    <a href="{{ url_for('dashboard.reports_export_csv', **request.args) }}"
+       class="btn btn-secondary btn-sm">⬇ CSV</a>
+    <a href="{{ url_for('dashboard.reports_export_pdf', **request.args) }}"
+       class="btn btn-secondary btn-sm">⬇ PDF</a>
+  </div>
+</form>
+
+<!-- ── Summary stats ─────────────────────────────────────────────────────── -->
+<div class="stat-grid mb-4">
+  <div class="stat-card">
+    <div class="stat-value">{{ total }}</div>
+    <div class="stat-label">Total Predictions</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ avg_conf }}%</div>
+    <div class="stat-label">Avg Confidence</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ per_class|length }}</div>
+    <div class="stat-label">Classes Detected</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ with_gradcam }}</div>
+    <div class="stat-label">With Grad-CAM</div>
+  </div>
+</div>
+
+{% if total > 0 %}
+
+<!-- ── Per-class breakdown ──────────────────────────────────────────────── -->
+<div class="card mb-4">
+  <h3 style="margin-bottom:1.25rem;">Predictions by Class</h3>
+  {% set colors = {
+    'Tomato_Healthy':'#27ae60',
+    'Tomato_Early_Blight':'#e67e22',
+    'Tomato_Late_Blight':'#c0392b',
+    'Tomato_Leaf_Mold':'#8e44ad'
+  } %}
+  {% for cls, count in per_class.items()|sort(attribute='1',reverse=True) %}
+  <div class="compare-bar-row" style="margin-bottom:0.9rem;">
+    <div class="compare-bar-header">
+      <span class="compare-bar-name">
+        {{ class_display.get(cls, cls) }}
+      </span>
+      <span class="compare-bar-value">
+        {{ count }}
+        <span style="font-size:0.78rem;color:var(--text-muted);font-weight:400;">
+          ({{ "%.0f"|format(count / total * 100) }}%)
+        </span>
+      </span>
+    </div>
+    <div class="compare-bar-bg" style="height:12px;">
+      <div class="compare-bar-fill"
+           data-pct="{{ "%.0f"|format(count/total*100) }}"
+           style="width:0%;background:{{ colors.get(cls,'var(--accent)') }};height:12px;">
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- ── Date-wise counts ─────────────────────────────────────────────────── -->
+{% if daily %}
+<div class="card mb-4">
+  <h3 style="margin-bottom:1rem;">Activity by Date</h3>
+  <div style="display:flex;flex-direction:column;gap:0.5rem;">
+    {% set max_daily = daily|map(attribute=1)|max %}
+    {% for date, count in daily %}
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <span style="font-size:0.8rem;color:var(--text-muted);width:100px;flex-shrink:0;">
+        {{ date }}
+      </span>
+      <div style="flex:1;background:var(--surface-3);border-radius:100px;height:8px;overflow:hidden;">
+        <div style="height:100%;border-radius:100px;background:var(--accent);
+                    width:{{ (count / max_daily * 100)|int }}%;
+                    transition:width 0.8s ease;"></div>
+      </div>
+      <span style="font-size:0.8rem;font-weight:600;color:var(--accent-lt);width:30px;text-align:right;">
+        {{ count }}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Disease guidance ──────────────────────────────────────────────────── -->
+{% set disease_info = {
+  'Tomato_Early_Blight': ('⚠ Early Blight','Apply copper-based fungicide. Remove affected lower leaves. Ensure proper plant spacing.','#e67e22'),
+  'Tomato_Late_Blight':  ('✕ Late Blight','URGENT: Apply systemic fungicide immediately. Isolate affected plants.','#c0392b'),
+  'Tomato_Leaf_Mold':    ('◈ Leaf Mold','Reduce humidity below 85%. Improve ventilation. Apply fungicide spray.','#8e44ad'),
+} %}
+{% set disease_classes = per_class.keys()|reject('equalto','Tomato_Healthy')|list %}
+{% if disease_classes %}
+<div class="card">
+  <h3 style="margin-bottom:1.25rem;">Disease Guidance</h3>
+  {% for cls in disease_classes if cls in disease_info %}
+  {% set title, action, color = disease_info[cls] %}
+  <div style="border-left:3px solid {{ color }};padding:0.9rem 1.1rem;
+              background:{{ color }}11;border-radius:0 var(--radius) var(--radius) 0;
+              margin-bottom:0.9rem;">
+    <strong style="color:{{ color }};">{{ title }}</strong>
+    <p style="font-size:0.88rem;margin-top:0.35rem;">{{ action }}</p>
+    <p style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+      {{ per_class[cls] }} record{{ 's' if per_class[cls]>1 else '' }} in current filter
+    </p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="card" style="text-align:center;padding:3rem;">
+  <div style="font-size:3rem;margin-bottom:1rem;">📈</div>
+  <h3 style="margin-bottom:0.75rem;">No data for these filters</h3>
+  <p style="margin-bottom:1.5rem;">Try adjusting or clearing the filters above.</p>
+  <a href="{{ url_for('dashboard.detect') }}" class="btn btn-primary">Start Detecting</a>
+</div>
+{% endif %}
+{% endblock %}

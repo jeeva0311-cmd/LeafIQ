@@ -1,0 +1,132 @@
+{
+  "project": "LeafIQ",
+  "phase": 2,
+  "preprocessing": {
+    "target_size": [
+      224,
+      224
+    ],
+    "channels": 3,
+    "color_mode": "RGB",
+    "resize_method": "BILINEAR",
+    "normalization": "divide_by_255  \u2192  [0.0, 1.0] float32"
+  },
+  "augmentation": {
+    "applied_to": "train split ONLY",
+    "horizontal_flip": {
+      "prob": 0.5
+    },
+    "vertical_flip": {
+      "prob": 0.3
+    },
+    "rotation": {
+      "range_deg": [
+        -20,
+        20
+      ]
+    },
+    "width_shift": {
+      "fraction": 0.1
+    },
+    "height_shift": {
+      "fraction": 0.1
+    },
+    "zoom": {
+      "range": [
+        0.9,
+        1.1
+      ]
+    },
+    "brightness": {
+      "range": [
+        0.8,
+        1.2
+      ]
+    },
+    "NOT_applied": [
+      "colour_jitter  (disease colour is diagnostic)",
+      "aggressive_crop  (may remove lesion regions)"
+    ],
+    "keras_equivalent": {
+      "class": "tf.keras.preprocessing.image.ImageDataGenerator",
+      "params": {
+        "rescale": "1./255",
+        "horizontal_flip": true,
+        "vertical_flip": true,
+        "rotation_range": 20,
+        "width_shift_range": 0.1,
+        "height_shift_range": 0.1,
+        "zoom_range": 0.1,
+        "brightness_range": [
+          0.8,
+          1.2
+        ],
+        "fill_mode": "nearest"
+      }
+    }
+  },
+  "class_to_index": {
+    "Tomato_Healthy": 0,
+    "Tomato_Early_Blight": 1,
+    "Tomato_Late_Blight": 2,
+    "Tomato_Leaf_Mold": 3
+  },
+  "index_to_class": {
+    "0": "Tomato_Healthy",
+    "1": "Tomato_Early_Blight",
+    "2": "Tomato_Late_Blight",
+    "3": "Tomato_Leaf_Mold"
+  },
+  "cache_files": {
+    "train": {
+      "images": "outputs/cache/train_images.npy",
+      "labels": "outputs/cache/train_labels.npy",
+      "paths": "outputs/cache/train_paths.npy"
+    },
+    "val": {
+      "images": "outputs/cache/val_images.npy",
+      "labels": "outputs/cache/val_labels.npy",
+      "paths": "outputs/cache/val_paths.npy"
+    },
+    "test": {
+      "images": "outputs/cache/test_images.npy",
+      "labels": "outputs/cache/test_labels.npy",
+      "paths": "outputs/cache/test_paths.npy"
+    }
+  },
+  "split_summary": [
+    {
+      "split": "train",
+      "n": 3815,
+      "shape": [
+        3815,
+        224,
+        224,
+        3
+      ],
+      "cached": false
+    },
+    {
+      "split": "val",
+      "n": 816,
+      "shape": [
+        816,
+        224,
+        224,
+        3
+      ],
+      "cached": false
+    },
+    {
+      "split": "test",
+      "n": 821,
+      "shape": [
+        821,
+        224,
+        224,
+        3
+      ],
+      "cached": false
+    }
+  ]
+}

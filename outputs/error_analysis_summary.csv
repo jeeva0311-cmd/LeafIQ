@@ -1,0 +1,3 @@
+model_key,display_name,total_test,total_errors,error_rate_pct,accuracy_pct,most_confused_true,most_confused_pred,most_confused_count,highest_error_class,highest_error_rate_pct,lowest_error_class,lowest_error_rate_pct,pct_errors_above_90pct_conf
+custom_cnn,Custom CNN,821,15,1.827,98.173,Tomato_Late_Blight,Tomato_Early_Blight,8,Tomato_Late_Blight,3.4843,Tomato_Healthy,0.0,6.67
+cnn_xgboost,CNN + XGBoost,821,14,1.7052,98.2948,Tomato_Late_Blight,Tomato_Early_Blight,7,Tomato_Early_Blight,3.3333,Tomato_Healthy,0.4167,28.57

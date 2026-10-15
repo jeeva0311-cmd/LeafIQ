@@ -1,0 +1,4 @@
+model_key,display_name,status,accuracy_pct,f1_macro_pct,precision_macro_pct,recall_macro_pct,inference_ms,n_params,model_size_kb,errors_821,note
+custom_cnn,Custom CNN,OK,98.17,98.07,97.89,98.28,74.41,323172,3901.8,15,
+mobilenetv2,MobileNetV2-A,OK,61.88,55.39,63.81,55.67,324.51,2422852,11343.1,313,
+cnn_xgboost,CNN + XGBoost,OK,98.29,98.21,98.15,98.28,87.31,N/A (tree model),834.6,14,inference_ms includes CNN feature extraction
